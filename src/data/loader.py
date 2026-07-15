@@ -1,3 +1,9 @@
+"""
+Data loading utilities.
+Handles the safe ingestion of raw and processed datasets, ensuring
+paths are resolved correctly regardless of where the script is executed.
+"""
+
 import pandas as pd
 from src.config import RAW_DATA_DIR
 

@@ -1,3 +1,8 @@
+"""
+Configuration module for the internship project.
+Centralizes all file paths and global variables to prevent hardcoded strings.
+"""
+
 from pathlib import Path
 
 # This dynamically finds the absolute path of the repository root

@@ -1,3 +1,9 @@
+"""
+Unit tests for the data profiling utilities.
+Ensures the generate_data_profile function correctly calculates missing
+values, handles empty dataframes, and returns the expected schema.
+"""
+
 import pandas as pd
 import pytest
 from src.utils.profiler import generate_data_profile

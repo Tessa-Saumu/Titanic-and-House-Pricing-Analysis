@@ -1,3 +1,9 @@
+"""
+Data profiling utilities.
+Provides functions to generate metadata summaries of pandas DataFrames,
+including data types, null counts, and unique value metrics.
+"""
+
 import pandas as pd
 
 def generate_data_profile(df: pd.DataFrame) -> pd.DataFrame:
