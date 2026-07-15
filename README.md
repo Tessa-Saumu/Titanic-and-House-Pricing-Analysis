@@ -7,6 +7,10 @@ Currently, the pipeline addresses two foundational datasets:
 1. **Titanic Dataset** (Classification)
 2. **House Prices Dataset** (Regression)
 
+## Project Progress
+- **Weeks 1-2 (Completed):** Repository architecture setup, custom data profiling, structural cleaning (handling missing data while preventing leakage), and comprehensive EDA using a custom Data Journalism visualization API. 
+  - ➡️ **[Read the detailed Week 1-2 Report here](reports/Week_1_2_README.md)**
+
 ## Repository Architecture
 The repository follows a domain-driven notebook structure combined with a centralized, modular source code folder to ensure code reusability and clean architecture.
 
