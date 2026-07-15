@@ -78,11 +78,8 @@ Desktop.ini
 # GENERATED OUTPUTS
 # =============================================================================
 
-figures/
 reports/
 
-# Keep folder structure
-!figures/.gitkeep
 !reports/.gitkeep
 
 # =============================================================================

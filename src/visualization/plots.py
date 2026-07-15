@@ -1,12 +1,13 @@
 """
 Visualization module for the project.
-Enforces a consistent 'Data Journalism' aesthetic.
+Enforces a consistent 'Data Journalism' aesthetic and autosaves plots.
 """
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from matplotlib.ticker import StrMethodFormatter
+from pathlib import Path
 
 JOURNALISM_PALETTE = [
     "#008fd5",  # Blue
@@ -48,13 +49,26 @@ def _format_axes(ax):
 
 def _get_order(df, column):
     """Automatically determine sensible ordering."""
-
     s = df[column].dropna()
 
     if pd.api.types.is_numeric_dtype(s):
         return sorted(s.unique())
 
     return list(s.value_counts().index)
+
+
+def _save_plot(title):
+    """Automatically saves the plot to the figures directory."""
+    # Navigate from src/visualization/plots.py to the root directory
+    root_dir = Path(__file__).resolve().parent.parent.parent
+    fig_dir = root_dir / "figures"
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Create a safe filename from the title
+    safe_title = "".join([c if c.isalnum() or c.isspace() else "" for c in title])
+    filename = safe_title.replace(" ", "_").lower() + ".png"
+    
+    plt.savefig(fig_dir / filename, dpi=300, bbox_inches="tight")
 
 
 def plot_histogram(df, column, title, bins=30):
@@ -77,6 +91,7 @@ def plot_histogram(df, column, title, bins=30):
     _format_axes(ax)
 
     plt.tight_layout()
+    _save_plot(title)
     plt.show()
 
 
@@ -101,6 +116,7 @@ def plot_bar_chart(df, column, title, order=None):
     plt.ylabel("Count")
 
     plt.tight_layout()
+    _save_plot(title)
     plt.show()
 
 
@@ -128,6 +144,7 @@ def plot_box(df, cat_col, num_col, title, order=None):
     _format_axes(ax)
 
     plt.tight_layout()
+    _save_plot(title)
     plt.show()
 
 
@@ -176,6 +193,7 @@ def plot_categorical_target_rate(df, cat_col, target_col, title, order=None):
         )
 
     plt.tight_layout()
+    _save_plot(title)
     plt.show()
 
 
@@ -198,4 +216,5 @@ def plot_correlation_heatmap(df, title):
     plt.title(title)
 
     plt.tight_layout()
+    _save_plot(title)
     plt.show()
