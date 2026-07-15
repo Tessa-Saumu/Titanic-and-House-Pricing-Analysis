@@ -75,18 +75,6 @@ Desktop.ini
 !.env.example
 
 # =============================================================================
-# DATA
-# =============================================================================
-
-# Ignore raw and processed datasets
-datasets/raw/*
-datasets/processed/*
-
-# Keep folder structure
-!datasets/raw/.gitkeep
-!datasets/processed/.gitkeep
-
-# =============================================================================
 # GENERATED OUTPUTS
 # =============================================================================
 
