@@ -10,6 +10,8 @@ Currently, the pipeline addresses two foundational datasets:
 ## Project Progress
 - **Weeks 1-2 (Completed):** Repository architecture setup, custom data profiling, structural cleaning (handling missing data while preventing leakage), and comprehensive EDA using a custom Data Journalism visualization API. 
   - ➡️ **[Read the detailed Week 1-2 Report here](reports/Week_1_2_README.md)**
+- **Week 3 (Completed):** Transitioned from visual EDA to rigorous statistical proofs. Developed a reusable statistical utility module (`src/utils/stats.py`) to decouple math from presentation. Performed exhaustive probability analysis (Bayes' Theorem), normality testing (Shapiro-Wilk), and programmatic hypothesis testing (Mann-Whitney U, Chi-Square). Addressed confounding variables and eliminated selection bias through systematic feature validation.
+  - ➡️ **[Read the detailed Week 3 Report here](reports/Week_3_README.md)**
 
 ## Repository Architecture
 The repository follows a domain-driven notebook structure combined with a centralized, modular source code folder to ensure code reusability and clean architecture.
