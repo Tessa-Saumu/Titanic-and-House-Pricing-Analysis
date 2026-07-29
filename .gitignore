@@ -75,12 +75,12 @@ Desktop.ini
 !.env.example
 
 # =============================================================================
-# MODELS (Future Weeks)
+# MODELS (Future Weeks) IGNORE - FILES ARE LESS THAN 10KB EACH
 # =============================================================================
 
-models/
-*.pkl
-*.joblib
+# models/
+# *.pkl
+# *.joblib
 
 # Keep folder structure
 !models/.gitkeep
