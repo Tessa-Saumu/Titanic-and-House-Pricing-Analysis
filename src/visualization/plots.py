@@ -218,3 +218,70 @@ def plot_correlation_heatmap(df, title):
     plt.tight_layout()
     _save_plot(title)
     plt.show()
+    
+from sklearn.metrics import confusion_matrix
+
+def plot_confusion_matrix(y_true, y_pred, title="Confusion Matrix"):
+    """Plots a stylized confusion matrix heatmap."""
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(6, 5))
+    
+    # Using 'Blues' to match JOURNALISM_PALETTE[0] aesthetic
+    ax = sns.heatmap(
+        cm, 
+        annot=True, 
+        fmt='d',
+        cmap="Blues", 
+        cbar=False,
+        linewidths=1,
+        linecolor="white",
+        square=True,
+        annot_kws={"size": 14, "weight": "bold"}
+    )
+    
+    plt.title(title)
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    
+    plt.tight_layout()
+    _save_plot(title)
+    plt.show()
+
+def plot_actual_vs_predicted(y_true, y_pred, title="Actual vs. Predicted"):
+    """Plots regression actuals vs predictions with a baseline of perfect prediction."""
+    plt.figure(figsize=(8, 5))
+    
+    plt.scatter(
+        y_true, 
+        y_pred, 
+        alpha=0.6, 
+        color=JOURNALISM_PALETTE[0],
+        edgecolor="white",
+        s=80
+    )
+    
+    # Perfect prediction diagonal line
+    min_val = min(y_true.min(), y_pred.min())
+    max_val = max(y_true.max(), y_pred.max())
+    plt.plot(
+        [min_val, max_val], 
+        [min_val, max_val], 
+        color=JOURNALISM_PALETTE[1], 
+        linestyle="--", 
+        linewidth=2,
+        label="Perfect Prediction"
+    )
+    
+    plt.title(title)
+    plt.xlabel("Actual Values")
+    plt.ylabel("Predicted Values")
+    
+    # Apply existing axis formatter for large numbers
+    ax = plt.gca()
+    _format_axes(ax)
+    ax.xaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
+    
+    plt.legend()
+    plt.tight_layout()
+    _save_plot(title)
+    plt.show()
