@@ -1,0 +1,13 @@
+--- Model Training Report ---
+Date: 2026-07-29 21:44:02
+Domain: Housing
+Model: Linear_Regression
+Training Data Shape: (436, 12)
+-----------------------------
+
+Metrics:
+- RMSE: 1,314,648.20
+- R2: 0.6581
+
+Insight:
+The model explains 65.8% of the variance in property prices. Predictions deviate by an average of $1,314,648.20 on the actual price scale.

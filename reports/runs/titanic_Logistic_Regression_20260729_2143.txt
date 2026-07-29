@@ -1,0 +1,15 @@
+--- Model Training Report ---
+Date: 2026-07-29 21:43:16
+Domain: Titanic
+Model: Logistic_Regression
+Training Data Shape: (711, 7)
+-----------------------------
+
+Metrics:
+- Accuracy: 0.7978
+- Precision: 0.7324
+- Recall: 0.7536
+- F1: 0.7429
+
+Insight:
+The model leans toward Recall (better at catching positives, higher risk of false alarms).
