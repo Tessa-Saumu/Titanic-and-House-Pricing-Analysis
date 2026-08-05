@@ -9,8 +9,8 @@ import logging
 import datetime
 from typing import Dict, Optional, Tuple
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    mean_squared_error, r2_score
+    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
+    mean_squared_error, mean_absolute_error, r2_score
 )
 from src.config import ROOT_DIR
 
@@ -18,10 +18,18 @@ logger = logging.getLogger(__name__)
 REPORTS_DIR = ROOT_DIR / "reports" / "runs"
 
 
-def evaluate_classification(y_true: np.ndarray, y_pred: np.ndarray, return_dict: bool = False) -> Optional[Tuple[Dict[str, float], str]]:
+def evaluate_classification(y_true: np.ndarray, y_pred: np.ndarray, y_prob: Optional[np.ndarray] = None, return_dict: bool = False) -> Optional[Tuple[Dict[str, float], str]]:
     """
     Evaluates a classification model and prints business-readable metrics.
-    Includes dynamic insights comparing precision and recall.
+    
+    Args:
+        y_true (np.ndarray): The ground truth labels.
+        y_pred (np.ndarray): The predicted labels.
+        y_prob (np.ndarray, optional): The predicted probabilities for the positive class (used for ROC-AUC). Defaults to None.
+        return_dict (bool, optional): Whether to return the metrics and insights. Defaults to False.
+        
+    Returns:
+        Optional[Tuple[Dict[str, float], str]]: A dictionary of metrics and the generated insight string, if return_dict is True.
     """
     metrics = {
         "accuracy": accuracy_score(y_true, y_pred),
@@ -30,11 +38,16 @@ def evaluate_classification(y_true: np.ndarray, y_pred: np.ndarray, return_dict:
         "f1": f1_score(y_true, y_pred)
     }
     
+    if y_prob is not None:
+        metrics["roc_auc"] = roc_auc_score(y_true, y_prob)
+    
     print("--- Classification Evaluation ---")
     print(f"Accuracy:  {metrics['accuracy']:.4f}")
     print(f"Precision: {metrics['precision']:.4f}")
     print(f"Recall:    {metrics['recall']:.4f}")
     print(f"F1-Score:  {metrics['f1']:.4f}")
+    if y_prob is not None:
+        print(f"ROC-AUC:   {metrics['roc_auc']:.4f}")
     print("-" * 33)
     
     # Custom insight logic
@@ -53,19 +66,32 @@ def evaluate_classification(y_true: np.ndarray, y_pred: np.ndarray, return_dict:
 
 def evaluate_regression(y_true: np.ndarray, y_pred: np.ndarray, return_dict: bool = False) -> Optional[Tuple[Dict[str, float], str]]:
     """
-    Evaluates a regression model, prints metrics, and returns dynamic insights.
+    Evaluates a regression model, prints metrics (MAE, MSE, RMSE, R2), and returns dynamic insights.
+    
+    Args:
+        y_true (np.ndarray): The ground truth target values.
+        y_pred (np.ndarray): The predicted target values.
+        return_dict (bool, optional): Whether to return the metrics and insights. Defaults to False.
+        
+    Returns:
+        Optional[Tuple[Dict[str, float], str]]: A dictionary of metrics and the generated insight string, if return_dict is True.
     """
+    mse = mean_squared_error(y_true, y_pred)
     metrics = {
-        "rmse": np.sqrt(mean_squared_error(y_true, y_pred)),
+        "mae": mean_absolute_error(y_true, y_pred),
+        "mse": mse,
+        "rmse": np.sqrt(mse),
         "r2": r2_score(y_true, y_pred)
     }
     
     print("--- Regression Evaluation ---")
+    print(f"MAE:  {metrics['mae']:,.2f}")
+    print(f"MSE:  {metrics['mse']:,.2f}")
     print(f"RMSE: {metrics['rmse']:,.2f}")
     print(f"R²:   {metrics['r2']:.4f}")
     print("-" * 29)
     
-    insight = f"The model explains {metrics['r2'] * 100:.1f}% of the variance in property prices. Predictions deviate by an average of ${metrics['rmse']:,.2f} on the actual price scale."
+    insight = f"The model explains {metrics['r2'] * 100:.1f}% of the variance in property prices. Predictions deviate by an average of ${metrics['mae']:,.2f} absolute error."
     
     print(f"Insight: {insight}")
     
@@ -73,9 +99,19 @@ def evaluate_regression(y_true: np.ndarray, y_pred: np.ndarray, return_dict: boo
         return metrics, insight
 
 
-def save_training_report(domain: str, model_name: str, metrics: Dict[str, float], insight: str, data_shape: tuple):
+def save_training_report(domain: str, model_name: str, metrics: Dict[str, float], insight: str, data_shape: tuple) -> None:
     """
     Generates and saves a timestamped training report to simulate an MLOps audit trail.
+    
+    Args:
+        domain (str): The business domain (e.g., 'housing', 'titanic').
+        model_name (str): The name of the trained algorithm.
+        metrics (Dict[str, float]): The evaluation metrics dictionary.
+        insight (str): The generated dynamic insight.
+        data_shape (tuple): The shape of the training dataset.
+        
+    Returns:
+        None
     """
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     
@@ -94,11 +130,10 @@ def save_training_report(domain: str, model_name: str, metrics: Dict[str, float]
         
         f.write("Metrics:\n")
         for key, value in metrics.items():
-            # Format large numbers for RMSE vs standard floats for Accuracy
             if value > 1000:
                 f.write(f"- {key.upper()}: {value:,.2f}\n")
             else:
-                f.write(f"- {key.capitalize()}: {value:.4f}\n")
+                f.write(f"- {key.upper()}: {value:.4f}\n")
                 
         f.write(f"\nInsight:\n{insight}\n")
         

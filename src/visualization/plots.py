@@ -8,6 +8,10 @@ import seaborn as sns
 import pandas as pd
 from matplotlib.ticker import StrMethodFormatter
 from pathlib import Path
+import numpy as np
+from sklearn.metrics import roc_curve, auc
+from sklearn.model_selection import learning_curve
+import shap
 
 JOURNALISM_PALETTE = [
     "#008fd5",  # Blue
@@ -282,6 +286,96 @@ def plot_actual_vs_predicted(y_true, y_pred, title="Actual vs. Predicted"):
     ax.xaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
     
     plt.legend()
+    plt.tight_layout()
+    _save_plot(title)
+    plt.show()
+
+def plot_learning_curve(estimator, X, y, title="Learning Curve"):
+    """
+    Plots the learning curve to diagnose overfitting or underfitting.
+    
+    Args:
+        estimator: The scikit-learn estimator/pipeline.
+        X (np.ndarray or pd.DataFrame): Training features.
+        y (np.ndarray or pd.Series): Target variable.
+        title (str): Title for the plot.
+    """
+    plt.figure(figsize=(8, 5))
+    train_sizes, train_scores, test_scores = learning_curve(
+        estimator, X, y, cv=5, n_jobs=-1, 
+        train_sizes=np.linspace(0.1, 1.0, 10), scoring="accuracy" if len(np.unique(y)) == 2 else "r2"
+    )
+    
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+    test_scores_std = np.std(test_scores, axis=1)
+    
+    plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1, color=JOURNALISM_PALETTE[0])
+    plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1, color=JOURNALISM_PALETTE[1])
+    
+    plt.plot(train_sizes, train_scores_mean, 'o-', color=JOURNALISM_PALETTE[0], label="Training score")
+    plt.plot(train_sizes, test_scores_mean, 'o-', color=JOURNALISM_PALETTE[1], label="Cross-validation score")
+    
+    plt.title(title)
+    plt.xlabel("Training Examples")
+    plt.ylabel("Score")
+    plt.legend(loc="best")
+    plt.tight_layout()
+    _save_plot(title)
+    plt.show()
+
+def plot_roc_curve(y_true, y_probs, title="ROC Curve"):
+    """
+    Plots the Receiver Operating Characteristic (ROC) curve.
+    
+    Args:
+        y_true (np.ndarray): Ground truth binary labels.
+        y_probs (np.ndarray): Predicted probabilities for the positive class.
+        title (str): Title for the plot.
+    """
+    fpr, tpr, _ = roc_curve(y_true, y_probs)
+    roc_auc = auc(fpr, tpr)
+    
+    plt.figure(figsize=(7, 6))
+    plt.plot(fpr, tpr, color=JOURNALISM_PALETTE[0], lw=2, label=f'ROC curve (AUC = {roc_auc:.3f})')
+    plt.plot([0, 1], [0, 1], color=JOURNALISM_PALETTE[4], lw=2, linestyle='--')
+    
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title(title)
+    plt.legend(loc="lower right")
+    plt.tight_layout()
+    _save_plot(title)
+    plt.show()
+
+def plot_shap_summary(model, X_transformed, feature_names, title="SHAP Feature Importance"):
+    """
+    Plots a SHAP summary plot for model interpretability.
+    
+    Args:
+        model: The trained inner estimator (not the full pipeline).
+        X_transformed (np.ndarray): The preprocessed feature matrix.
+        feature_names (list): The list of feature names.
+        title (str): The plot title for saving.
+    """
+    # Create explainer based on model type
+    if type(model).__name__ in ['RandomForestRegressor', 'RandomForestClassifier', 'XGBRegressor', 'XGBClassifier']:
+        explainer = shap.TreeExplainer(model)
+    else:
+        # Fallback to KernelExplainer for SVM/KNN or LinearExplainer for others.
+        # Using a summary sample to speed up KernelExplainer if needed
+        background = shap.sample(X_transformed, 100)
+        explainer = shap.Explainer(model.predict, background)
+        
+    shap_values = explainer(X_transformed)
+    
+    plt.figure(figsize=(10, 6))
+    plt.title(title, pad=20, fontsize=16, fontweight='bold')
+    shap.summary_plot(shap_values, X_transformed, feature_names=feature_names, show=False)
+    
     plt.tight_layout()
     _save_plot(title)
     plt.show()
