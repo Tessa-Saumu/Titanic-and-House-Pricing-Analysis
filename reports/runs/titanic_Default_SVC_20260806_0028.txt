@@ -1,0 +1,16 @@
+--- Model Training Report ---
+Date: 2026-08-06 00:28:39
+Domain: Titanic
+Model: Default_SVC
+Training Data Shape: (711, 7)
+-----------------------------
+
+Metrics:
+- ACCURACY: 0.8202
+- PRECISION: 0.8000
+- RECALL: 0.7059
+- F1: 0.7500
+- ROC_AUC: 0.8499
+
+Insight:
+The model leans toward Precision (conservative predictions, higher risk of missing positives).
