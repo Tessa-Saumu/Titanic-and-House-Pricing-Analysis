@@ -1,0 +1,15 @@
+--- Model Training Report ---
+Date: 2026-08-13 00:29:55
+Domain: Housing
+Model: Engineered_Linear_Tuned
+Training Data Shape: (436, 12)
+-----------------------------
+
+Metrics:
+- MAE: 941,290.86
+- MSE: 1,671,679,034,004.88
+- RMSE: 1,292,934.27
+- R2: 0.6693
+
+Insight:
+The model explains 66.9% of the variance in property prices. Predictions deviate by an average of $941,290.86 absolute error.

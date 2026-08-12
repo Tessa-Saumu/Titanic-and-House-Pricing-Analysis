@@ -1,12 +1,15 @@
 """
 Statistical testing utilities.
-Abstracts scipy.stats functions to return rich, business-friendly dictionaries
-containing raw test statistics, p-values, and plain-English conclusions.
+Abstracts scipy.stats and statsmodels functions for clean notebook integration.
 """
 
 import pandas as pd
 import numpy as np
+import logging
 from scipy import stats
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+logger = logging.getLogger(__name__)
 
 def _generate_conclusion(p_value: float, alpha: float, test_name: str, h1_desc: str) -> str:
     """
@@ -119,3 +122,31 @@ def run_chi_square(feature1: pd.Series, feature2: pd.Series, alpha: float = 0.05
         "is_significant": p_value < alpha,
         "conclusion": conclusion
     }
+    
+def calculate_vif(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates the Variance Inflation Factor (VIF) to detect multicollinearity.
+    Only processes numerical columns and drops NaNs to prevent calculation crashes.
+    
+    Args:
+        df (pd.DataFrame): The input dataframe containing features.
+        
+    Returns:
+        pd.DataFrame: A dataframe containing feature names and their VIF scores.
+    """
+    logger.info("Calculating VIF...")
+    # Isolate numeric data and drop NaNs for safe matrix inversion
+    numeric_df = df.select_dtypes(include=[np.number]).dropna()
+    
+    vif_data = pd.DataFrame()
+    vif_data["Feature"] = numeric_df.columns
+    
+    # Calculate VIF for each feature
+    vif_data["VIF"] = [
+        variance_inflation_factor(numeric_df.values, i)
+        for i in range(len(numeric_df.columns))
+    ]
+    
+    # Sort descending to show highly collinear features first
+    vif_data = vif_data.sort_values(by="VIF", ascending=False).reset_index(drop=True)
+    return vif_data

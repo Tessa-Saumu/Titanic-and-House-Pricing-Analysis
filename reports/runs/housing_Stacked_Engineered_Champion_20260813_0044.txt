@@ -1,0 +1,15 @@
+--- Model Training Report ---
+Date: 2026-08-13 00:44:03
+Domain: Housing
+Model: Stacked_Engineered_Champion
+Training Data Shape: (436, 12)
+-----------------------------
+
+Metrics:
+- MAE: 941,934.91
+- MSE: 1,661,756,726,066.90
+- RMSE: 1,289,091.43
+- R2: 0.6712
+
+Insight:
+The model explains 67.1% of the variance in property prices. Predictions deviate by an average of $941,934.91 absolute error.

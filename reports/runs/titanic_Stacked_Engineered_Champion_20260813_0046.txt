@@ -1,0 +1,16 @@
+--- Model Training Report ---
+Date: 2026-08-13 00:46:37
+Domain: Titanic
+Model: Stacked_Engineered_Champion
+Training Data Shape: (711, 8)
+-----------------------------
+
+Metrics:
+- ACCURACY: 0.8371
+- PRECISION: 0.7910
+- RECALL: 0.7794
+- F1: 0.7852
+- ROC_AUC: 0.8187
+
+Insight:
+The model leans toward Precision (conservative predictions, higher risk of missing positives).
