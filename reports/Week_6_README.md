@@ -1,27 +1,40 @@
-# Week 6: Feature Engineering & Synergistic Stacking
+# Week 6: Feature Engineering & Model Optimization
 
 ## Objective
-To break through the algorithmic performance ceiling established in Week 5 by shifting focus to the data space. This week utilized custom Scikit-Learn transformers to safely construct, mathematically filter, and synergistically stack new features without introducing data leakage.
+To break through the algorithmic performance ceiling established in Week 5 by shifting focus to the data space. This week utilized custom Scikit-Learn transformers to safely construct, mathematically filter, transform, and synergistically stack new features, followed by hyperparameter tuning to finalize production models.
 
-## Methodology: Isolation vs. Synergy
-We split the week's experiments into two distinct methodologies:
-1. **Isolated Testing & Regularization (Notebook 01):** We tested hypotheses individually and used L1 Regularization (Lasso) and Recursive Feature Elimination (RFE) to observe how mathematical selectors punish redundant features.
-2. **Incremental Forward Stacking (Notebook 02):** Recognizing that features interact non-linearly in the real world, we built a custom stacking algorithm. It tested hypotheses sequentially via Cross-Validation, locking in features only if they improved the global metric, before passing the optimized dataset to a Hyperparameter tournament.
+---
 
-## Key Findings & Results
+## 1. Feature Engineering
+We engineered new features to capture domain knowledge that the raw data failed to express.
+*   **Titanic (Text Extraction & Combinations):** Extracted passenger `Title` (Mr, Mrs, Master) from the raw `Name` string to serve as a powerful socio-economic and age proxy. Combined `SibSp` and `Parch` to create a new `family_size` feature.
+*   **Titanic (Interaction Features):** Generated an `age_x_pclass` interaction feature to mathematically force the model to recognize that age impacts survival differently depending on socio-economic class.
+*   **Housing (Aggregations):** Created an `is_estate` binary flag (area > 8000 and stories > 2) to help linear models capture luxury outliers. 
 
-### Housing Prices (Regression)
-- **The Multicollinearity Trap:** VIF (Variance Inflation Factor) analysis correctly triggered `inf` warnings when `total_rooms` was combined with `bedrooms` and `bathrooms`, forcing us to dynamically drop source columns to protect the linear matrix.
-- **Synergistic Success:** Stacking density, amenity, estate, and room features together lowered the cross-validated training RMSE to ~$995k. 
-- **Champion:** `Tuned_Engineered_Linear`. The final Test RMSE dropped to **$1,289,091** (a $25,000+ improvement over the Week 5 baseline).
+## 2. Feature Transformation
+We prepared the data for modeling using strict Scikit-Learn `ColumnTransformers` to prevent target leakage.
+*   **Encoding & Scaling:** Applied `OneHotEncoder(drop='first')` to all categorical variables to prevent multicollinearity, and `RobustScaler` to standard numericals.
+*   **Handling Skewed Variables:** EDA proved `Area` was massively right-skewed. To fix this, we applied a `QuantileTransformer(output_distribution='normal')` to forcefully map the skewed tail into a Gaussian distribution, satisfying the core mathematical assumption of Linear Regression. We also applied `TransformedTargetRegressor(func=np.log1p)` to normalize the skewed `Price` target.
 
-### Titanic Survival (Classification)
-- **RFE Feature Replacement:** RFE objectively proved the value of our feature engineering by ranking `title`, `family_size`, and `age_x_pclass` as priority 1, while actively dropping the raw `Age`, `SibSp`, and `Parch` columns as inferior noise.
-- **The Algorithmic Upset:** In Week 5, the Support Vector Classifier (SVC) defeated all tree models on raw data. However, once we injected `Title` extraction into the dataset, **XGBoost** was able to utilize the new categorical splits to dethrone the SVC. 
-- **Champion:** `Tuned_Engineered_XGBoost`. The final F1-Score improved from 0.7500 to **0.7704**, with an impressive ROC-AUC of 0.8371.
+## 3. Feature Selection
+Instead of guessing which features to drop, we used strict mathematical and statistical techniques.
+*   **Statistical Selection (Housing):** Variance Inflation Factor (VIF) analysis proved that attempting to use `Total_Rooms`, `bedrooms`, and `bathrooms` simultaneously resulted in a singular matrix (`VIF = inf`). We dropped the redundant source columns. We then applied L1 Regularization (Lasso), which mathematically shrank the noisy coefficients to absolute zero.
+*   **Recursive Feature Elimination (Titanic):** We used RFE to rank our feature space. RFE objectively proved the value of our engineering by ranking `title`, `family_size`, and `age_x_pclass` as Priority 1 (Keep), while actively dropping the raw `Age`, `SibSp`, and `Parch` columns as inferior noise.
 
-## Challenges Encountered
-- **Automated Selectors vs. Non-Linear Boundaries:** We discovered that RFE (which relies on linear coefficients) heavily penalized continuous variables like `Age`. Blindly trusting RFE would have destroyed the non-linear boundaries required by our SVC, highlighting the danger of trusting automated feature selection without domain knowledge. 
+## 4. Model Optimization
+After defining the optimal feature space via Incremental Forward Stacking, we executed hyperparameter tuning.
+*   **Techniques Used:** We passed our Top 3 algorithms through a tournament using both `GridSearchCV` and `RandomizedSearchCV` with 5-fold Cross-Validation (`cv=5`) to guarantee robustness and prevent overfitting.
+*   **Optimization Results:**
+    *   *Housing:* `RandomSearch` identified that the `LinearRegression` baseline (with `fit_intercept=True`) generalized best on the newly engineered data.
+    *   *Titanic:* `GridSearch` identified that `XGBoost` (`max_depth=10`, `min_samples_split=5`) outperformed our previous SVC champion when utilizing the newly extracted categorical features.
 
-## Next Steps (Week 7: Deployment)
-Both `Tuned_Engineered_Linear` and `Tuned_Engineered_XGBoost` are fully encapsulated in Scikit-Learn `Pipelines` alongside their custom `TransformerMixin` classes. They have been serialized via `joblib` and are ready to be served via a FastAPI/Streamlit application.
+## 5. Performance Evaluation
+We evaluated the optimized models against the frozen Week 5 baseline.
+
+### Housing (Regression)
+*   **Metrics:** MAE, MSE, RMSE, R² Score.
+*   **Performance Change:** The final Test RMSE dropped to **$1,289,091** (a $25,000+ improvement over the Week 5 baseline). By explicitly transforming the skewed `Area` and flagging luxury estates, the model's ability to predict expensive outliers improved dramatically.
+
+### Titanic (Classification)
+*   **Metrics:** Accuracy, Precision, Recall, F1-Score, ROC-AUC.
+*   **Performance Change:** In Week 5, the SVC defeated all tree models on raw data. However, once we injected `Title` extraction, **XGBoost** utilized the new categorical splits to dethrone the SVC. The final F1-Score improved from 0.7500 to **0.7704**, with an impressive ROC-AUC of 0.8371.

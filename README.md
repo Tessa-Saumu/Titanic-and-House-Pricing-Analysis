@@ -1,55 +1,133 @@
-# Data Science Internship: 8-Week Progressive Project
+# AnalystLab: End-to-End Machine Learning Microservice
 
-## Overview
-This repository tracks the progression of an 8-week Data Science internship. Instead of treating tasks as isolated scripts, this project is architected as an evolving, professional-grade software pipeline. The work progresses sequentially from raw data ingestion and exploratory data analysis (EDA), through statistical analysis, feature engineering, machine learning, and finally, deployment.
+## Project Description
+This repository represents the culmination of an intensive 7-week Machine Learning internship. It elevates a standard data science analysis into a **production-ready, decoupled microservice architecture**. 
 
-Currently, the pipeline addresses two foundational datasets:
-1. **Titanic Dataset** (Classification)
-2. **House Prices Dataset** (Regression)
+The project features a highly optimized Machine Learning backend that serves predictions via RESTful API endpoints, and a custom-designed, insight-driven frontend workspace for users to simulate prediction scenarios.
 
-## Project Progress
-- **Weeks 1-2 (Completed):** Repository architecture setup, custom data profiling, structural cleaning (handling missing data while preventing leakage), and comprehensive EDA using a custom Data Journalism visualization API. 
-  - ➡️ **[Read the detailed Week 1-2 Report here](reports/Week_1_2_README.md)**
-- **Week 3 (Completed):** Transitioned from visual EDA to rigorous statistical proofs. Developed a reusable statistical utility module (`src/utils/stats.py`) to decouple math from presentation. Performed exhaustive probability analysis (Bayes' Theorem), normality testing (Shapiro-Wilk), and programmatic hypothesis testing (Mann-Whitney U, Chi-Square). Addressed confounding variables and eliminated selection bias through systematic feature validation.
-  - ➡️ **[Read the detailed Week 3 Report here](reports/Week_3_README.md)**
+---
 
-## Repository Architecture
-The repository follows a domain-driven notebook structure combined with a centralized, modular source code folder to ensure code reusability and clean architecture.
+## Problem Statement
+The pipeline concurrently solves two classic ML problems, addressing specific data complexities for each:
+1. **Housing Price Prediction (Regression):** Estimating continuous property market values based on physical and location characteristics. *Challenge:* Overcoming severe target skewness and heteroscedasticity on luxury outliers.
+2. **Titanic Survival (Classification):** Estimating binary survival probabilities based on historical passenger demographics. *Challenge:* Navigating severe class imbalances and discovering complex non-linear survival boundaries.
 
-```text
-analystlab-internship/
-├── README.md               # Top-level executive summary
-├── datasets/
-│   ├── raw/                # Immutable original datasets (Do not edit manually)
-│   └── processed/          # Cleaned, model-ready datasets 
-├── notebooks/              # Domain-organized Jupyter notebooks
-│   ├── titanic/            # Classification pipeline
-│   │   ├── 01_data_profiling.ipynb
-│   │   ├── 02_data_cleaning.ipynb
-│   │   ├── 03_exploratory_analysis.ipynb
-│   │   └── 04_summary.ipynb
-│   └── housing/            # Regression pipeline
-│       ├── 01_data_profiling.ipynb
-│       ├── 02_data_cleaning.ipynb
-│       ├── 03_exploratory_analysis.ipynb
-│       └── 04_summary.ipynb
-├── reports/                # Weekly logs, design decisions, and findings
-├── figures/                # Exported visual assets and plots
-├── src/                    # Reusable Python modules (DRY principle)
-│   ├── data/               # Scripts for loading and saving data
-│   ├── visualization/      # Standardized plotting functions
-│   ├── utils/              # Helper functions (e.g., custom profilers)
-│   └── config.py           # Global configuration and path management
-└── requirements.txt        # Environment dependencies
+---
+
+## Models Used
+Following rigorous statistical selection, feature engineering, synergistic stacking, and hyperparameter tuning, the following champion models were deployed:
+- **Housing Model:** `Tuned Engineered Linear Regression`. (Augmented with a `TransformedTargetRegressor` for log-scaling and a `QuantileTransformer` to normalize spatial features).
+- **Titanic Model:** `Tuned Engineered XGBoost`. (Leveraging extracted titles and family-size aggregations to capture non-linear demographic interactions).
+
+---
+
+## Technologies Used
+- **Machine Learning & Data:** `scikit-learn`, `xgboost`, `pandas`, `numpy`, `scipy`
+- **Model Serialization:** `joblib`
+- **Backend API:** `FastAPI`, `uvicorn`, `pydantic`
+- **Frontend UI:** `streamlit` (with heavy custom CSS injection)
+- **Experiment Tracking:** Custom MLOps File Registry
+
+---
+
+## API Endpoints
+
+The backend is a strictly typed FastAPI application serving the serialized Scikit-Learn pipelines.
+
+### `GET /`
+- **Description:** System health check.
+- **Output:** `{"status": "API is live and routing traffic."}`
+
+### `POST /predict/housing`
+- **Description:** Accepts property characteristics and returns the predicted USD value.
+
+### `POST /predict/titanic`
+- **Description:** Accepts passenger demographics and returns survival classification and model confidence.
+
+---
+
+## Input and Output Format
+
+The API enforces strict data contracts using Pydantic. 
+
+### Housing Request & Response Example
+**POST payload (`application/json`):**
+```json
+{
+  "area": 5000,
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "stories": 2,
+  "mainroad": "yes",
+  "guestroom": "no",
+  "basement": "no",
+  "hotwaterheating": "no",
+  "airconditioning": "yes",
+  "parking": 0,
+  "prefarea": "yes",
+  "furnishingstatus": "furnished"
+}
+Response:
+code
+JSON
+{
+  "prediction": "$6,161,400.68",
+  "confidence": null,
+  "message": "Housing prediction generated successfully."
+}
+Titanic Request & Response Example
+POST payload (application/json):
+code
+JSON
+{
+  "Pclass": 3,
+  "Name": "Smith, Mr. John",
+  "Sex": "male",
+  "Age": 30.0,
+  "SibSp": 0,
+  "Parch": 0,
+  "Fare": 15.50,
+  "Embarked": "S"
+}
+Response:
+code
+JSON
+{
+  "prediction": "Did Not Survive",
+  "confidence": 0.868,
+  "message": "Titanic prediction generated successfully."
+}
 ```
-
-## Workflow Strategy
-- **Notebooks:** Kept lightweight. They are used for narration, visualization, and decision-making. 
-- **Src Module:** Any code that is reused across multiple notebooks (like a custom data profiler or missing-value imputer) is abstracted into the `src/` directory.
-- **Reports:** To avoid monolithic documentation, detailed design decisions and weekly progress summaries are maintained in the `reports/` directory.
 
 ## Setup Instructions
-1. Clone the repository.
-2. Install dependencies via: `pip install -r requirements.txt`
-3. Ensure the raw data files are placed within `datasets/raw/`.
+### Clone the repository:
+```code
+Bash
+git clone https://github.com/yourusername/analystlab-internship.git
+cd analystlab-internship
 ```
+### Create a virtual environment (Recommended):
+```code
+Bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+```
+### Install dependencies:
+```code
+Bash
+pip install -r requirements.txt
+```
+### How to Run the Project
+This project uses a decoupled architecture. We have provided an orchestration script to boot both the backend and frontend simultaneously.
+**Run the Orchestrator:**
+```code
+Bash
+python run_app.py
+```
+**Frontend Workspace/Streamlit Dashboard**: Open your browser to http://localhost:8501
+
+**Backend Swagger Docs**: Open your browser to http://localhost:8000/docs to test the API directly without the UI.
+
+To stop the servers, simply press CTRL+C in the terminal.
+
+---
