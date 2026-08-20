@@ -8,6 +8,12 @@ The project was developed as the culmination of a 7-week machine learning intern
 
 ---
 
+<p align="center">
+  <img src="figures/demo.gif" alt="AnalystLab Demo" width="800">
+</p>
+
+---
+
 ## What Problem Does This Solve?
 
 Many machine learning projects stop after model training and evaluation. The model may perform well in a notebook, but a user still has no practical way to interact with it.
